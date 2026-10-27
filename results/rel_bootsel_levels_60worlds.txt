@@ -1,3 +1,3 @@
-60 worlds l90_B40: P(ok) 0.800, cost 0.301
-60 worlds l95_B40: P(ok) 0.867, cost 0.321
-60 worlds l95_B100: P(ok) 0.900, cost 0.330
+60 worlds, conditional target, l90_B40: P(ok) 0.750, cost 0.384
+60 worlds, conditional target, l95_B40: P(ok) 0.850, cost 0.395
+60 worlds, conditional target, l95_B100: P(ok) 0.900, cost 0.413

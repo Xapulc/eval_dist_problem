@@ -1,3 +1,0 @@
-world 24, 200 histories: naive_mom_L: P(ok) 0.025 (0.01-0.06), mean cost 0.149
-world 24, 200 histories: delta_mom_L: P(ok) 0.290 (0.23-0.36), mean cost 0.180
-world 24, 200 histories: bootsel_mom_L: P(ok) 0.805 (0.74-0.85), mean cost 0.282

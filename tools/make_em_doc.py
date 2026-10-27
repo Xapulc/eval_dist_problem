@@ -1,64 +1,96 @@
 """Генератор документа EM_один_тест.tex: числа берутся из data/B_rel_s24.  Запуск из корня: python3 tools/make_em_doc.py, затем xelatex."""
 import os, sys, json, numpy as np, pandas as pd
 from scipy.optimize import brentq
+
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, root)
-d = f"{root}/data/B_rel_s24"; prm = json.load(open(f"{d}/hidden/params.json")); p_true, s_true = np.array(prm["p"]), np.array(prm["s"])
-X = pd.read_csv(f"{d}/public/dataset_train.csv").sort_values(["release_id", "eval_id", "run_no"]).red_flag.values.reshape(70, 40, 5).sum(2)
+d = f"{root}/data/B_rel_s24"
+prm = json.load(open(f"{d}/hidden/params.json"))
+p_true, s_true = np.array(prm["p"]), np.array(prm["s"])
+X = (
+    pd.read_csv(f"{d}/public/dataset_train.csv")
+    .sort_values(["release_id", "eval_id", "run_no"])
+    .red_flag.values.reshape(70, 40, 5)
+    .sum(2)
+)
 N, M = X.shape
-nplus = (X > 0).sum(0); S = X.sum(0)
+nplus = (X > 0).sum(0)
+S = X.sum(0)
 
 
 def mle(k):
-    npl, s_ = int((k > 0).sum()), int(k.sum()); n = len(k)
+    npl, s_ = int((k > 0).sum()), int(k.sum())
+    n = len(k)
     if npl == 0:
         return 0.0, float("nan"), npl, s_
     m = s_ / npl
     if m <= 1 + 1e-12:
-        return 1.0, 0.0, npl, s_                              # boundary: s -> 0, p -> 1
+        return 1.0, 0.0, npl, s_  # boundary: s -> 0, p -> 1
     if m >= 5 - 1e-12:
         s = 1.0
     else:
         s = brentq(lambda t: 5 * t / (1 - (1 - t) ** 5) - m, 1e-9, 1 - 1e-12)
-    q = npl / n; p = min(q / (1 - (1 - s) ** 5), 1.0)
+    q = npl / n
+    p = min(q / (1 - (1 - s) ** 5), 1.0)
     return p, s, npl, s_
 
 
 def em(k, iters=500):
-    npl, s_ = (k > 0).sum(), k.sum(); n = len(k)
+    npl, s_ = (k > 0).sum(), k.sum()
+    n = len(k)
     if npl == 0:
         return 0.0, float("nan"), 0
     p, s = npl / n, min(s_ / (5 * npl), 0.999)
     for it in range(iters):
-        z = (1 - s) ** 5; w0 = p * z / (1 - p + p * z); W = npl + (n - npl) * w0
+        z = (1 - s) ** 5
+        w0 = p * z / (1 - p + p * z)
+        W = npl + (n - npl) * w0
         p_new, s_new = W / n, s_ / (5 * W)
         if abs(p_new - p) < 1e-10 and abs(s_new - s) < 1e-10:
-            p, s = p_new, s_new; break
+            p, s = p_new, s_new
+            break
         p, s = p_new, s_new
     return min(p, 1.0), s, it + 1
 
 
 rows = [(j, *mle(X[:, j]), *em(X[:, j]), p_true[j], s_true[j]) for j in range(M)]
-deg = [r for r in rows if r[3] > 0 and r[4] == r[3]]            # all positive K equal 1
+deg = [r for r in rows if r[3] > 0 and r[4] == r[3]]  # all positive K equal 1
 zero = [r for r in rows if r[3] == 0]
 print(f"tests with n+ = 0: {len(zero)}; tests with S = n+ (MLE p=1, s=0): {len(deg)}; median n+: {np.median(nplus)}")
 # illustrative tests: a typical one, a degenerate one, a zero one, and a frequent one
 typ = min((r for r in rows if r[3] >= 3 and r[4] > r[3]), key=lambda r: abs(r[3] - 4))
-small = max((r for r in rows if 1 <= r[3] <= 2 and r[4] > r[3]), key=lambda r: r[1] / max(r[8], 1e-9))   # p-hat overshoots the truth most
+small = max(
+    (r for r in rows if 1 <= r[3] <= 2 and r[4] > r[3]), key=lambda r: r[1] / max(r[8], 1e-9)
+)  # p-hat overshoots the truth most
 freq = max(rows, key=lambda r: r[3])
 pick = [typ, small, zero[0], freq]
 # how often the degenerate case (all positive K equal 1 for some test) occurs in histories of this world
 from evals_task.model import draw
+
 cnt_hist, cnt_tests = 0, 0
 for h in range(200):
-    Xh = draw(np.random.default_rng(400000 + h), p_true, s_true, N)[1].sum(2); npl_h, S_h = (Xh > 0).sum(0), Xh.sum(0)
-    dg = ((npl_h >= 1) & (S_h == npl_h)).sum(); cnt_tests += dg; cnt_hist += dg > 0
+    Xh = draw(np.random.default_rng(400000 + h), p_true, s_true, N)[1].sum(2)
+    npl_h, S_h = (Xh > 0).sum(0), Xh.sum(0)
+    dg = ((npl_h >= 1) & (S_h == npl_h)).sum()
+    cnt_tests += dg
+    cnt_hist += dg > 0
 print(f"degenerate tests: histories with >=1: {cnt_hist/200:.2f}, mean per history {cnt_tests/200:.2f}")
+
+
 def fmt(x, nd=3):
     return "---" if (isinstance(x, float) and np.isnan(x)) else (f"{x:.{nd}f}" if isinstance(x, float) else str(x))
-tabrows = "\n".join(f"{r[0]} & {r[3]} & {r[4]} & {fmt(r[1])} & {fmt(r[2])} & {fmt(r[5])} & {fmt(r[6])} & {r[7]} & {fmt(r[8])} & {fmt(r[9])} \\\\" for r in pick)
+
+
+tabrows = "\n".join(
+    f"{r[0]} & {r[3]} & {r[4]} & {fmt(r[1])} & {fmt(r[2])} & {fmt(r[5])} & {fmt(r[6])} & {r[7]} & {fmt(r[8])} & {fmt(r[9])} \\\\"
+    for r in pick
+)
 # agreement EM vs closed form over all tests with n+ > 0
-dif = max(max(abs(r[1] - r[5]), abs((r[2] if not np.isnan(r[2]) else 0) - (r[6] if not np.isnan(r[6]) else 0))) for r in rows if r[3] > 0)
+dif = max(
+    max(abs(r[1] - r[5]), abs((r[2] if not np.isnan(r[2]) else 0) - (r[6] if not np.isnan(r[6]) else 0)))
+    for r in rows
+    if r[3] > 0
+)
 print("max |EM - closed form| over tests:", dif)
 
 tex = r"""\documentclass[11pt,a4paper]{article}
@@ -232,6 +264,17 @@ p^{(t+1)}=\frac WN,\qquad s^{(t+1)}=\frac{\sum_iw_iK_i}{rW}=\frac S{rW}.
 \end{document}
 """
 import math
+
 dig = max(1, int(-math.log10(max(dif, 1e-12))))
-open(f"{root}/EM_один_тест.tex", "w").write(tex % dict(med=int(np.median(nplus)), nzero=len(zero), dhist=round(100 * cnt_hist / 200), dmean=cnt_tests / 200, dig=dig, tab=tabrows))
+open(f"{root}/EM_один_тест.tex", "w").write(
+    tex
+    % dict(
+        med=int(np.median(nplus)),
+        nzero=len(zero),
+        dhist=round(100 * cnt_hist / 200),
+        dmean=cnt_tests / 200,
+        dig=dig,
+        tab=tabrows,
+    )
+)
 print("tex written")
