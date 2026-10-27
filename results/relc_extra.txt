@@ -1,0 +1,2 @@
+naive MoM at cond alpha/2 (0.05), 60 worlds: pi_c 0.072, P(ok) 0.88, cost 0.366, val missed 1.12
+greedy over exact MILP at cond target, 20 worlds: mean 0.011 max 0.056

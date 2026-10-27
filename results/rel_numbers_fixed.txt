@@ -1,0 +1,6 @@
+   all2   MoM: bias +26%, sd 20%, est.se / true sd 0.92, coverage of 90% bound 0.99
+   all2   MLE: bias +168%, sd 86%, est.se / true sd 8.42, coverage of 90% bound 1.00
+   all2  freq: bias +0%, sd 25%, est.se / true sd 0.96, coverage of 90% bound 0.84
+ oracle   MoM: bias +20%, sd 19%, est.se / true sd 0.97, coverage of 90% bound 0.98
+ oracle   MLE: bias +146%, sd 75%, est.se / true sd 8.32, coverage of 90% bound 0.99
+ oracle  freq: bias -0%, sd 29%, est.se / true sd 1.01, coverage of 90% bound 0.84

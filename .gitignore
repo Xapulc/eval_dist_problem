@@ -1,0 +1,9 @@
+build/
+.DS_Store
+__pycache__/
+*.aux
+*.log
+*.out
+*.toc
+*.nav
+*.snm

@@ -1,0 +1,63 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{PT Serif}[Ligatures=TeX]
+\setsansfont{Helvetica Neue}[Ligatures=TeX]
+\setmonofont{Menlo}
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\setotherlanguage{english}
+\newfontfamily\cyrillicfont{PT Serif}[Ligatures=TeX]
+\newfontfamily\cyrillicfontsf{Helvetica Neue}
+\newfontfamily\cyrillicfonttt{Menlo}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\geometry{margin=24mm}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=*}
+\usepackage{microtype}
+\usepackage{hyperref}
+\hypersetup{colorlinks,linkcolor=black,urlcolor=blue!50!black}
+\emergencystretch=2em
+\newcommand{\Bern}{\operatorname{Bern}}
+
+\title{Экономия на эвалах}
+\author{Elixi\\[2pt]\small условие задачи второго дня}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Контекст}
+Чат --- центр приложения Elixi: пользователь задаёт вопрос о здоровье, LLM-ассистент отвечает по его анализам, генетике и данным носимых устройств. Ассистент выпускается часто. Перед раскаткой новой версии прогоняются автотесты, а затем LLM-тесты (эвалы): сценарий с данными и вопросом пользователя, ответ новой версии ассистента, проверка ответа моделью-судьёй --- зелёный или красный.
+
+LLM-тесты долгие, случайные и дорогие: каждый прогон --- минуты и токены ассистента и судьи, а один и тот же тест может и пройти, и не пройти. Сейчас на каждом релизе каждый из $40$ тестов прогоняется $5$ раз.
+
+\section*{Что мы знаем о тестах}
+\begin{itemize}
+\item Красный --- настоящая проблема: ложных срабатываний не бывает.
+\item Если проблема есть, тест краснеет не на каждом прогоне: одни проблемы видны почти всегда, другие --- редко.
+\item На релизе тест можно прогнать от $0$ до $5$ раз; каждый прогон оплачивается. Стоимости прогонов известны: от $1$ до $90$ за прогон.
+\end{itemize}
+
+\section*{Модель}
+Тест $i$, релиз $j$. Событие «в сценарии теста $i$ на релизе $j$ есть проблема» обозначим $I_{ij}$; считаем $I_{ij}\sim\Bern(p_i)$ независимо по тестам и релизам. Если $I_{ij}=0$, все прогоны зелёные. Если $I_{ij}=1$, каждый прогон независимо красный с вероятностью $s_i$. Параметры $p_i$ и $s_i$ неизвестны, стоимость прогона теста $i$ --- $c_i$. Релиз с~проблемой --- релиз, в~котором проблема есть хотя бы в~одном тесте. Такой релиз пропущен, если все запланированные прогоны всех тестов зелёные: план выпустил бы его как чистый.
+
+\section*{Вопрос}
+Сколько раз гонять каждый тест --- от $0$ до $5$, --- чтобы пропускать как можно меньше релизов с~проблемами и как можно больше экономить?
+
+\section*{Данные}
+\begin{itemize}
+\item \texttt{evals.csv}: \texttt{eval\_id}, \texttt{cost} --- $40$ тестов и цена одного прогона.
+\item \texttt{dataset\_train.csv}: \texttt{release\_id}, \texttt{eval\_id}, \texttt{run\_no}, \texttt{red\_flag} --- история $70$ релизов, на каждом каждый тест прогнан $5$ раз, записан каждый прогон.
+\end{itemize}
+
+\section*{Формат ответа}
+\begin{itemize}
+\item \texttt{plan.csv} со столбцами \texttt{eval\_id}, \texttt{n\_runs} --- сколько раз гонять каждый тест, от $0$ до $5$.
+\item Презентация с постановкой, решением и обоснованием.
+\end{itemize}
+
+\section*{Оценивание}
+План применяется к \texttt{dataset\_valid.csv} --- $30$ скрытым релизам в том же формате, у каждого теста записаны все $5$ прогонов. Считаем, сколько релизов с~проблемой план пропустил (среди пяти записей какого-то теста есть красный, но в~первых \texttt{n\_runs} прогонах всех тестов --- только зелёные) и сколько он тратит на прогоны.
+
+\end{document}

@@ -1,0 +1,18 @@
+
+=== p_scale 0.036, d_hard 0.3, history 70  (A = 0.1, 30 worlds; cost relative to all 5; val = missed problem releases of 30; pass: <= 4)
+      solution      L  P(ok)   cost | val mean  10-90%  pass P(> ref)
+          all1  0.261   0.00  0.200 |     6.07   4-9    0.30     1.00
+          all2  0.131   0.00  0.400 |     2.77   1-4    0.90     0.77
+          all5  0.028   1.00  1.000 |     0.00   0-0    1.00     0.00
+   naive_mom_L  0.132   0.10  0.195 |     2.63   0-5    0.80     0.67
+   naive_mle_L  0.040   0.90  0.917 |     0.17   0-0    1.00     0.03
+naive_pooled_L  0.209   0.00  0.113 |     4.67   1-8    0.53     0.97
+  naive_freq_L  0.278   0.00  0.094 |     6.77   3-10   0.17     1.00
+   naive_mom_E  0.028   1.00  1.000 |     0.00   0-0    1.00     0.00
+   naive_mom_P  0.028   1.00  1.000 |     0.00   0-0    1.00     0.00
+   delta_mom_L  0.099   0.40  0.319 |     1.77   0-4    1.00     0.47
+ bootpct_mom_L  0.093   0.53  0.322 |     1.63   0-4    1.00     0.37
+ bootsel_mom_L  0.061   0.90  0.612 |     0.80   0-2    1.00     0.00
+    holdout_cp  0.060   0.93  0.553 |     0.80   0-3    1.00     0.30
+        oracle  0.100   1.00  0.188 |     2.17   0-5    0.87     0.57
+problem releases in validation: 23.6 of 30

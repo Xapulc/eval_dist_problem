@@ -1,0 +1,256 @@
+% Экономия на эвалах — условие задачи для команд (beamer 16:9, XeLaTeX). Тёмная тема в духе elixi.com
+\documentclass[aspectratio=169,10pt]{beamer}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\setotherlanguage{english}
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont{Helvetica Neue}
+\setsansfont{Helvetica Neue}
+\newfontfamily\cyrillicfont{Helvetica Neue}
+\newfontfamily\cyrillicfontsf{Helvetica Neue}
+\newfontfamily\light{Helvetica Neue Light}
+\newfontfamily\medium{Helvetica Neue Medium}
+\setmonofont{Menlo}[Scale=0.8]
+\newfontfamily\cyrillicfonttt{Menlo}[Scale=0.8]
+\usefonttheme{professionalfonts}
+\usepackage{unicode-math}
+\setmathfont{FiraMath-Regular.otf}
+\setmathfont{Helvetica Neue}[range={"0030-"0039,"002E}]
+\usepackage{tikz}
+\usetikzlibrary{calc,positioning,svg.path,arrows.meta}
+\usepackage[most]{tcolorbox}
+
+% ---------- палитра (elixi.com) ----------
+\definecolor{bg}{HTML}{141414}
+\definecolor{card}{HTML}{1F1F1F}
+\definecolor{cardline}{HTML}{2E2E2E}
+\definecolor{ink}{HTML}{FFFFFF}
+\definecolor{muted}{HTML}{A3A3A3}
+\definecolor{dim}{HTML}{606060}
+\definecolor{lime}{HTML}{CAFF6F}
+\definecolor{olive}{HTML}{3A4A17}
+\definecolor{rose}{HTML}{FF6B7A}
+\definecolor{amber}{HTML}{F5C542}
+\tikzset{every node/.append style={text=muted}}
+
+% ---------- сетка: поля 30pt, промежуток между карточками 8pt ----------
+\newlength{\gutter}\setlength{\gutter}{30pt}
+\newlength{\gap}\setlength{\gap}{8pt}
+\setbeamersize{text margin left=\gutter,text margin right=\gutter}
+\setbeamercolor{background canvas}{bg=bg}
+\setbeamercolor{normal text}{fg=muted,bg=bg}
+\setbeamercolor{structure}{fg=lime}
+\setbeamerfont{normal text}{size=\fontsize{10}{14}}
+\setbeamertemplate{navigation symbols}{}
+
+% заголовок: лейбл капителью, затем крупный светлый заголовок, затем 14pt воздуха
+\newcommand{\lbl}[1]{{\color{lime}\fontsize{6.5}{8}\medium\addfontfeatures{LetterSpace=16}\MakeUppercase{#1}}}
+\setbeamertemplate{frametitle}{%
+  \vspace*{10pt}%
+  \ifx\insertframesubtitle\empty\else\lbl{\insertframesubtitle}\par\vspace{4pt}\fi
+  {\color{ink}\fontsize{19}{22}\light\insertframetitle}\par\vspace{10pt}}
+\setbeamertemplate{footline}{%
+  \hspace{\gutter}\raisebox{-0.5pt}{\elixilogo[dim]{6.5}}\enspace{\color{dim}\fontsize{6}{8}\selectfont Экономия на эвалах\enspace·\enspace Школа по математической статистике}\hfill
+  {\color{dim}\fontsize{6}{8}\selectfont\insertframenumber}\hspace{\gutter}\vspace{12pt}}
+
+% ---------- элементы ----------
+\newcommand{\hi}[1]{{\color{ink}#1}}
+\newcommand{\ac}[1]{{\color{lime}#1}}
+\newcommand{\cardtitle}[1]{{\raggedright\color{ink}\fontsize{10}{12}\medium\hyphenpenalty=10000 #1\par}\vspace{4pt}}
+\newcommand{\num}[1]{{\color{lime}\fontsize{9}{9}\light #1}}
+\tcbset{raster before skip=0pt, raster after skip=0pt,
+  ecard/.style={enhanced, colback=card, colframe=cardline, boxrule=0.5pt, arc=8pt, boxsep=0pt, before skip=0pt, after skip=0pt,
+  left=12pt, right=12pt, top=9pt, bottom=9pt, halign=flush left, fontupper=\fontsize{8.5}{11.5}\selectfont\color{muted}},
+  cbox/.style={ecard, arc=7pt, left=6pt, right=6pt, top=7pt, bottom=7pt, fontupper=\fontsize{7.5}{9.5}\selectfont\color{muted}}}
+\newtcolorbox{ecard}[1][]{ecard,#1}
+\newtcolorbox{cbox}[1][]{cbox,#1}
+\newcommand{\cboxtitle}[1]{{\raggedright\color{ink}\fontsize{8}{9.5}\medium\hyphenpenalty=10000 #1\par}\vspace{2pt}}
+\newcommand{\pill}[1]{\tikz[baseline=(p.base)]\node[fill=lime, rounded corners=7pt, inner xsep=8pt, inner ysep=3.5pt, text=bg] (p) {\fontsize{8}{9}\medium #1};}
+\newcommand{\ghost}[1]{\tikz[baseline=(p.base)]\node[draw=dim, rounded corners=6pt, inner xsep=6pt, inner ysep=2.8pt, text=ink] (p) {\fontsize{7.5}{8}\ttfamily #1};}
+\newcommand{\runr}{\tikz[baseline=-0.6ex]\fill[rose] (0,0) circle (2.6pt);}
+\newcommand{\rung}{\tikz[baseline=-0.6ex]\fill[lime!65!black] (0,0) circle (2.6pt);}
+\tikzset{arr/.style={-{Stealth[length=3.6pt, width=3.2pt]}, line width=0.7pt, draw=dim}}
+% стрелки между соседними карточками растра: \chainarrows{c1,c2,...}
+\newcommand{\chainarrows}[1]{\begin{tikzpicture}[remember picture, overlay]
+  \foreach \a [remember=\a as \prev (initially none)] in {#1} {\ifx\prev\nonebox\else\draw[arr] ($(\prev.east)+(1pt,0)$) -- ($(\a.west)+(-1pt,0)$);\fi}
+  \end{tikzpicture}}
+\def\nonebox{none}
+% кольцо-показатель: \ring{доля}{число}{подпись}
+\newcommand{\ring}[3]{%
+  \begin{tikzpicture}[baseline=(c.base)]
+    \draw[cardline, line width=2.6pt] (0,0) circle (0.52);
+    \draw[lime, line width=2.6pt, line cap=round] (90:0.52) arc[start angle=90, end angle={90-360*#1}, radius=0.52];
+    \node[text=ink] (c) at (0,0) {\fontsize{13}{13}\medium #2};
+    \node[below=0.66cm, align=center, text width=3.4cm] at (0,0) {\fontsize{8}{10}\selectfont\hyphenpenalty=10000 #3};
+  \end{tikzpicture}}
+% логотип Elixi (brand/elixi-logo.svg, viewBox 60.811 x 25): \elixilogo[цвет]{высота в pt}
+\newcommand{\elixilogo}[2][ink]{\tikz[baseline=0pt]{\pgfmathsetmacro{\elxs}{#2/25}\fill[#1, yscale=-1, scale=\elxs, shift={(0,-25pt)}] svg {M 19.826 4.063 C 19.826 3.689 20.131 3.386 20.507 3.386 L 25.064 3.386 C 25.44 3.386 25.744 3.689 25.744 4.063 L 25.744 23.971 C 25.744 24.345 25.44 24.648 25.064 24.648 L 20.507 24.648 C 20.131 24.648 19.826 24.345 19.826 23.971 Z M 0 16.489 C 0 11.467 3.203 7.978 8.968 7.978 C 14.995 7.978 17.903 11.337 17.903 16.424 L 17.903 17.349 C 17.903 17.649 17.66 17.891 17.359 17.891 L 6.331 17.891 C 6.007 17.891 5.752 18.172 5.829 18.485 C 6.207 20.006 7.371 21.087 9.001 21.087 C 10.249 21.087 11.292 20.549 11.718 19.54 C 11.816 19.308 12.03 19.13 12.284 19.13 L 17.074 19.13 C 17.418 19.13 17.677 19.445 17.579 19.773 C 16.591 23.095 13.406 25 8.968 25 C 3.727 25 0 22.032 0 16.489 Z M 5.914 14.092 C 5.825 14.406 6.081 14.695 6.41 14.695 L 11.578 14.695 C 11.899 14.695 12.155 14.417 12.083 14.105 C 11.718 12.506 10.566 11.695 9.099 11.695 C 7.482 11.695 6.324 12.658 5.914 14.092 Z M 54.249 9.014 C 54.249 8.64 54.554 8.336 54.93 8.336 L 59.466 8.336 C 59.841 8.336 60.146 8.64 60.146 9.014 L 60.146 23.964 C 60.146 24.338 59.841 24.641 59.466 24.641 L 54.93 24.641 C 54.554 24.641 54.249 24.338 54.249 23.964 Z M 28.225 9.014 C 28.225 8.64 28.529 8.336 28.905 8.336 L 33.441 8.336 C 33.816 8.336 34.121 8.64 34.121 9.014 L 34.121 23.964 C 34.121 24.338 33.816 24.641 33.441 24.641 L 28.905 24.641 C 28.529 24.641 28.225 24.338 28.225 23.964 Z M 40.572 8.329 C 40.868 8.329 41.104 8.566 41.162 8.855 C 41.44 10.25 42.675 11.301 44.158 11.301 C 45.64 11.301 46.876 10.25 47.154 8.855 C 47.211 8.566 47.448 8.329 47.744 8.329 L 51.723 8.329 C 52.024 8.329 52.269 8.572 52.249 8.871 C 51.969 13.077 48.454 16.402 44.158 16.402 C 39.862 16.402 36.346 13.077 36.066 8.871 C 36.046 8.572 36.292 8.329 36.592 8.329 Z M 40.572 24.648 C 40.868 24.648 41.104 24.411 41.162 24.122 C 41.44 22.727 42.675 21.676 44.158 21.676 C 45.64 21.676 46.876 22.727 47.154 24.122 C 47.211 24.411 47.448 24.648 47.744 24.648 L 51.723 24.648 C 52.024 24.648 52.269 24.405 52.249 24.106 C 51.969 19.9 48.454 16.575 44.158 16.575 C 39.862 16.575 36.346 19.9 36.066 24.106 C 36.046 24.405 36.292 24.648 36.592 24.648 Z M 53.669 3.555 C 53.669 1.592 55.267 0 57.24 0 C 59.212 0 60.811 1.592 60.811 3.555 C 60.811 5.518 59.212 7.11 57.24 7.11 C 55.267 7.11 53.669 5.518 53.669 3.555 Z M 27.617 3.555 C 27.617 1.592 29.215 0 31.188 0 C 33.16 0 34.759 1.592 34.759 3.555 C 34.759 5.518 33.16 7.11 31.188 7.11 C 29.215 7.11 27.617 5.518 27.617 3.555 Z};}}
+% требование к чату: \req{номер}{заголовок}{пояснение}
+\newcommand{\req}[3]{\begin{minipage}[t]{0.47\linewidth}\raggedright\num{#1}\enspace{\color{ink}\fontsize{9.5}{11}\medium\hyphenpenalty=10000 #2}\par\vspace{2pt}{\fontsize{8.5}{10.5}\selectfont #3\par}\end{minipage}}
+% моноширинная таблица внутри карточки
+\newenvironment{monotab}[1]{\par\ttfamily\fontsize{7.5}{10.5}\selectfont\begin{tabular}{@{}#1@{}}}{\end{tabular}\par}
+
+\begin{document}
+
+% ================= 1. титул =================
+{\setbeamertemplate{footline}{}
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture, overlay]
+  \shade[top color=olive, bottom color=bg, middle color=olive!40!bg] (current page.north west) rectangle (current page.south east);
+  \node[anchor=north west, inner sep=0] at ($(current page.north west)+(\gutter,-24pt)$) {\elixilogo{13}};
+  \node[anchor=north east, inner sep=0, text=muted] at ($(current page.north east)+(-\gutter,-26pt)$) {\fontsize{8}{10}\selectfont Школа по математической статистике};
+  \node[anchor=south] at ($(current page.center)+(0,0.78cm)$) {\lbl{Задача второго дня}};
+  \node[anchor=south, text=ink] at ($(current page.center)+(0,0.05cm)$) {\fontsize{30}{34}\light Экономия на эвалах};
+  \node[anchor=north, text=muted, align=center, text width=12cm] at ($(current page.center)+(0,-0.2cm)$) {\fontsize{11}{15}\selectfont Сколько и как экономить токены при частых LLM-тестах};
+  \node[anchor=north, text=ink] at ($(current page.center)+(0,-1.25cm)$) {\fontsize{9}{11}\medium Виктор Харламов\,\textcolor{muted}{·}\,Data Scientist};
+\end{tikzpicture}
+\end{frame}}
+
+% ================= 2. чат =================
+\begin{frame}[t]{Чат --- центр приложения}{Продукт}
+\begin{minipage}[t]{0.66\linewidth}\raggedright\hyphenpenalty=10000
+Пользователь задаёт вопрос --- ассистент отвечает по его анализам, генетике и данным носимых устройств\par\vspace{8pt}
+{\color{ink}\fontsize{10}{12}\medium Что чат должен делать}\par\vspace{7pt}
+\req{01}{Отвечать по данным}{его анализы, генетика и сон, а не общие советы}\hfill\req{02}{Точность в фактах}{числа, единицы и нормы --- как в анализах}\par\vspace{10pt}
+\req{03}{Быть безопасным}{без диагнозов и назначений, вовремя к врачу}\hfill\req{04}{Говорить понятно}{коротко, по делу, в тоне продукта}
+\end{minipage}
+\begin{tikzpicture}[remember picture, overlay]
+  % телефон 3.5 x 7.2 см: верх на уровне лейбла, низ в ~14pt от колонтитула
+  \begin{scope}[shift={($(current page.north east)+(-\gutter-3.5cm,-0.55cm)$)}, font=\fontsize{5.4}{6.8}\selectfont]
+  \fill[black, rounded corners=0.52cm] (0,0) rectangle (3.5,-7.2);
+  \draw[cardline!75!white, line width=0.9pt, rounded corners=0.52cm] (0,0) rectangle (3.5,-7.2);
+  \fill[black!97, rounded corners=0.44cm] (0.1,-0.1) rectangle (3.4,-7.1);
+  \fill[black, rounded corners=0.09cm] (1.3,-0.22) rectangle (2.2,-0.4);
+  \node[anchor=west, text=ink, inner sep=0] at (0.36,-0.31) {\fontsize{5.5}{6}\medium 9:41};
+  \fill[ink] (2.72,-0.34) rectangle (2.78,-0.28) (2.8,-0.36) rectangle (2.86,-0.26) (2.88,-0.38) rectangle (2.94,-0.24);
+  \draw[ink, line width=0.4pt, rounded corners=0.3pt] (3.0,-0.37) rectangle (3.2,-0.26); \fill[ink] (3.02,-0.355) rectangle (3.16,-0.275);
+  % верхняя панель
+  \draw[cardline!80!white, line width=0.5pt] (0.46,-0.8) circle (0.14); \draw[muted, line width=0.5pt] (0.37,-0.8) -- (0.55,-0.8) (0.37,-0.74) -- (0.55,-0.74) (0.37,-0.86) -- (0.55,-0.86);
+  \node[inner sep=0] at (1.75,-0.8) {\elixilogo{5}};
+  \draw[cardline!80!white, line width=0.5pt] (3.04,-0.8) circle (0.14); \draw[muted, line width=0.5pt] (2.97,-0.84) rectangle (3.11,-0.74) (3.0,-0.74) -- (3.0,-0.7) -- (3.08,-0.7) -- (3.08,-0.74);
+  % вопрос пользователя
+  \node[anchor=north east, fill=cardline, rounded corners=0.16cm, inner xsep=5pt, inner ysep=4pt, text=ink] (q) at (3.2,-1.18) {Как у меня с ЛПНП?};
+  % ответ ассистента: заголовок, абзац, значение, график — друг под другом
+  \node[anchor=north west, text width=2.85cm, align=left, text=ink, inner sep=0] (h) at (0.3,-1.82) {\fontsize{6.2}{7.6}\medium Последний ЛПНП --- в оптимальном диапазоне};
+  \node[anchor=north west, text width=2.85cm, align=left, inner sep=0, below=5pt of h.south west, anchor=north west] (p) {\fontsize{5.2}{6.6}\selectfont Два года назад было 138 мг/дл --- заметное улучшение\\[2pt]Оптимальный уровень связан с меньшим риском для сердца, а тренд вниз говорит, что ваши меры работают};
+  \node[inner sep=0, below=7pt of p.south west, anchor=north west, text=ink] (v) {\fontsize{11}{11}\medium 81\,{\fontsize{5}{5}\selectfont\color{muted}мг/дл}};
+  \coordinate (g) at ($(v.south west)+(0,-0.22cm)$);
+  \foreach \dy/\l in {0/150, -0.46/100, -0.92/50} {\draw[cardline, line width=0.3pt] ($(g)+(0.32,\dy)$) -- ($(g)+(2.9,\dy)$); \node[anchor=east, text=dim, inner sep=1pt] at ($(g)+(0.3,\dy)$) {\fontsize{4}{4}\selectfont \l};}
+  % точки: 138, 104 и 81 мг/дл
+  \draw[rose, line width=0.9pt] ($(g)+(0.5,-0.11)$) -- ($(g)+(1.6,-0.42)$); \draw[amber, line width=0.9pt] ($(g)+(1.6,-0.42)$) -- ($(g)+(2.7,-0.635)$);
+  \fill[rose] ($(g)+(0.5,-0.11)$) circle (0.05); \fill[amber] ($(g)+(1.6,-0.42)$) circle (0.05); \fill[lime] ($(g)+(2.7,-0.635)$) circle (0.055);
+  \foreach \x/\l in {0.5/янв 2024, 1.6/янв 2025, 2.7/дек 2025} {\node[anchor=north, text=dim, inner sep=1pt] at ($(g)+(\x,-1.0)$) {\fontsize{4}{4}\selectfont \l};}
+  % поле ввода
+  \fill[card, rounded corners=0.17cm] (0.3,-6.58) rectangle (3.2,-6.92);
+  \node[anchor=west, text=dim, inner sep=0] at (0.44,-6.75) {\fontsize{5.2}{5}\selectfont Спросите о своём здоровье};
+  \fill[lime] (3.02,-6.75) circle (0.12); \draw[bg, line width=0.7pt, -{Stealth[length=1.8pt]}] (3.02,-6.82) -- (3.02,-6.68);
+  \end{scope}
+\end{tikzpicture}
+\end{frame}
+
+% ================= 3. релизы =================
+\begin{frame}[t]{Как выкатывается новая версия}{Релизы}
+\begin{tcbraster}[raster columns=6, raster equal height, raster column skip=\gap]
+\begin{cbox}[remember as=r1]\cboxtitle{Запуск раскатки}новая версия\end{cbox}
+\begin{cbox}[remember as=r2]\cboxtitle{Автотесты}Python\end{cbox}
+\begin{cbox}[remember as=r3, colframe=lime, boxrule=0.8pt]{\raggedright\color{lime}\fontsize{8}{9.5}\medium\mbox{LLM-тесты}\par}\vspace{2pt}эвалы\end{cbox}
+\begin{cbox}[remember as=r4]\cboxtitle{Тестовая раскатка}на стенд\end{cbox}
+\begin{cbox}[remember as=r5]\cboxtitle{Ручная проверка}командой\end{cbox}
+\begin{cbox}[remember as=r6]\cboxtitle{Раскатка}всем\end{cbox}
+\end{tcbraster}
+\chainarrows{r1,r2,r3,r4,r5,r6}
+\vspace{\gap}
+\begin{tcbraster}[raster columns=2, raster equal height, raster column skip=\gap]
+\begin{ecard}
+\cardtitle{Автотесты --- быстрые и почти бесплатные}
+Без случайности: результат всегда один и тот же
+\end{ecard}
+\begin{ecard}[colframe=lime, boxrule=0.8pt]
+\cardtitle{LLM-тесты --- долгие, случайные и дорогие}
+Каждый прогон --- минуты и токены ассистента и судьи, а результат может отличаться от раза к разу
+\end{ecard}
+\end{tcbraster}
+\end{frame}
+
+% ================= 4. устройство LLM-теста =================
+\begin{frame}[t]{Как устроен LLM-тест}{LLM-тесты}
+\begin{tcbraster}[raster columns=4, raster equal height, raster column skip=\gap]
+\begin{cbox}[remember as=t1]\cboxtitle{Сценарий}данные и вопрос пользователя\end{cbox}
+\begin{cbox}[remember as=t2]\cboxtitle{Ответ}новой версии ассистента на этот сценарий\end{cbox}
+\begin{cbox}[remember as=t3]\cboxtitle{Проверка}ответ --- свободный текст, его оценивает модель-судья\end{cbox}
+\begin{cbox}[remember as=t4, colframe=lime, boxrule=0.8pt]\rung\enspace\hi{зелёный}\par\vspace{2pt}\runr\enspace\hi{красный}\end{cbox}
+\end{tcbraster}
+\chainarrows{t1,t2,t3,t4}
+\vspace{\gap}
+\begin{tcbraster}[raster columns=2, raster equal height, raster column skip=\gap]
+\begin{ecard}
+\cardtitle{Пример}
+\hi{Сценарий:} высокий холестерин\\
+\hi{Проверка:} по анализам, без назначений
+\end{ecard}
+\begin{ecard}
+\cardtitle{Три особенности}
+\hi{Долго:} минуты на один прогон\\
+\hi{Случайно:} тот же тест может и пройти, и нет\\
+\hi{Дорого:} токены ассистента и судьи
+\end{ecard}
+\end{tcbraster}
+\end{frame}
+
+% ================= 5. сейчас и вопрос =================
+\begin{frame}[t]{Сколько прогонов нам нужно?}{Задача}
+\begin{center}
+\ring{1}{40}{LLM-тестов}\hspace{30pt}
+\ring{1}{×5}{прогонов каждого теста\\ на каждом релизе}\hspace{30pt}
+\ring{0.7}{100}{релизов: 70 в истории\\ и 30 на проверку}
+\end{center}
+\vspace{8pt}
+\begin{minipage}{0.92\linewidth}\raggedright{\color{ink}\fontsize{14}{18.5}\light Сколько раз гонять каждый тест --- от~0 до~5, --- чтобы \ac{пропускать как можно меньше релизов с~проблемами} и как можно больше экономить?}\end{minipage}
+\end{frame}
+
+% ================= 6. данные =================
+\begin{frame}[t]{Данные}{Что выдаётся}
+\begin{tcbraster}[raster columns=5, raster equal height, raster column skip=\gap]
+\begin{ecard}[raster multicolumn=2]
+\ghost{evals.csv}\par\vspace{6pt}
+40 LLM-тестов и цена одного прогона\par\vspace{4pt}
+\begin{monotab}{l@{\hspace{14pt}}l}
+\hi{eval\_id} & \hi{cost} \\
+0 & 2.83 \\ 1 & 1.17 \\ 2 & 8.38 \\ 3 & 7.90 \\ \textcolor{dim}{…} &
+\end{monotab}
+\end{ecard}
+\begin{ecard}[raster multicolumn=3]
+\ghost{dataset\_train.csv}\par\vspace{6pt}
+70 релизов, каждый тест прогнан 5 раз, записан каждый прогон\par\vspace{2pt}Строки первого релиза:\par\vspace{4pt}
+\begin{monotab}{l@{\hspace{12pt}}l@{\hspace{12pt}}l@{\hspace{12pt}}l}
+\hi{release\_id} & \hi{eval\_id} & \hi{run\_no} & \hi{red\_flag} \\
+0 & 0 & 0 & 0 \\ 0 & 0 & 1 & 0 \\ \textcolor{dim}{…} & & & \\ 0 & 8 & 0 & 0 \\ 0 & 8 & 1 & \textcolor{rose}{1} \\ \textcolor{dim}{…} & & &
+\end{monotab}
+\end{ecard}
+\end{tcbraster}
+\end{frame}
+
+% ================= 7. ответ и оценивание =================
+\begin{frame}[t]{Формат ответа и оценивание}{Как проверяем}
+\begin{tcbraster}[raster columns=5, raster equal height, raster column skip=\gap]
+\begin{ecard}[raster multicolumn=2]
+\cardtitle{Ответ}
+\ghost{plan.csv}\par\vspace{8pt}
+Прогонов на тест: от 0 до 5\par\vspace{5pt}
+\begin{monotab}{l@{\hspace{14pt}}l}
+\hi{eval\_id} & \hi{n\_runs} \\
+0 & 0 \\ 1 & 5 \\ 2 & 5 \\ \textcolor{dim}{…} &
+\end{monotab}
+\end{ecard}
+\begin{ecard}[raster multicolumn=3]
+\cardtitle{Проверка}
+\ghost{dataset\_valid.csv}\par\vspace{8pt}
+30 скрытых релизов в том же формате\par\vspace{2pt}На каждом применяем план и считаем:\par\vspace{5pt}
+{\settowidth{\dimen0}{\rung\enspace}\hangindent=\dimen0\hangafter=1\rung\enspace\hi{пропущено} --- релизы с~проблемой, где все прогоны плана зелёные\par}\vspace{3pt}
+\rung\enspace\hi{потрачено} --- стоимость прогонов плана
+\end{ecard}
+\end{tcbraster}
+\end{frame}
+
+\end{document}
